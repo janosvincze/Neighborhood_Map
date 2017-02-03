@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" data-framework="knockoutjs">
+    <head>
+        <meta charset="utf-8">
+        <title>Neighborhood Map</title>
+        <link rel="stylesheet" href="static/main.css">
+    </head>
+    <body>
+    <div class="container">
+        <div class="row">
+            <div class="navigation_side" data-bind="visible: navigationVisible">
+                <div class="options-box">
+                    <p>Search:
+                    <input class="search-field"
+                        data-bind="value: searchingText,
+                                   event: { change: $root.changeSearch }"/></p>
+                    <ul class="place-list" data-bind="foreach: visiblePlaces">
+                        <li class="place-list-item"
+                            data-bind="click: selectPlace">
+                            <label class="place-list-item-label"
+                                   data-bind="text: title"></label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="map_side">
+                <div class="navigation_bar">
+                    <div class="navigation_hamburger"
+                        data-bind="click: setMenuVisible">&#9776; Menu</div>
+                </div>
+                <div class="map_container">
+                    <div id="map" style="width:100%;height:100%;"></div>
+                    <div data-bind="foreach: visiblePlaces">
+                        <div data-bind="latitude:lat, longitude:lng,
+                                        title: title,
+                                        id: id,
+                                        place_type: place_type,
+                                        map:map"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template id="tmp-infowindow">
+        <div class="map-infowindow">
+            <div class="map-infowindow-title">
+                <strong>{{title}}</strong>
+            </div>
+            <ul class="map-infowindow-fq">
+                {{tip}}
+            </ul>
+        </div>
+    </template>
+
+    <template id="tmp-fq-row">
+        <li class="fq-tip">
+            <div class="tip-author">{{author}}</div>
+            <div class="tip-body">{{body}}</div>
+        </li>
+    </template>
+
+    <script src="modules/jquery.min.js"></script>
+    <script src="modules/knockout-latest.js"></script>
+    <script src="modules/knockout.mapping-latest.js"></script>
+    <script src="js/app.js"></script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVEs_tZbJ4E94kooi8ZwedkjO7TtK1sOs&v=3&callback=createMap"
+        onerror="googleError()">
+    </script>
+
+    </body>
+</html>

@@ -1,0 +1,153 @@
+body,
+html {
+    background-color: black;
+    height: 95%;
+}
+
+.container {
+    width: 100%;
+}
+
+.row {
+    width: 100%;
+}
+
+.navigation_side {
+    width: 125px;
+    height: 100%;
+    float: left;
+}
+
+@media (min-width:481px) {
+    .navigation_side {
+        display: initial;
+    }
+}
+
+@media (max-width:480px) {
+    .navigation_side {
+        display: none;
+    }
+}
+
+.map_side {
+    height: 100%;
+    overflow: auto;
+    padding: 10px;
+    padding-top: 0px;
+}
+
+.navigation_bar {
+    background-color: black;
+    color: PaleGoldenRod;
+    font-weight: bold;
+    font-size: 20px;
+    height: 20px;
+    padding-bottom: 5px;
+}
+
+.navigation_hamburger {
+    width: 80px;
+    cursor: pointer;
+}
+
+.places_navigation {
+    width: 30%;
+}
+
+.map_container {
+    position: relative;
+    width: auto;
+    height: calc(100vh - 45px);
+}
+
+#map {
+    padding: 5px;
+    bottom: 0px;
+    right: 0px;
+}
+
+.map-infowindow {
+    width: 200px;
+}
+
+.map-infowindow-fq.img {
+    width: 20px;
+    height: 20px;
+}
+
+.options-box {
+    height: 100%;
+    text-align: left;
+    width: 100%;
+    font-weight: bold;
+    color: PaleGoldenRod;
+    padding: 5px;
+    padding-top: 0px;
+    margin: 0px;
+}
+
+.search-field {
+    width: 95%;
+    background-color: beige;
+    border: solid 1px #dcdcdc;
+    transition: box-shadow 0.3s, border 0.3s;
+}
+
+.search-field:focus {
+    border: solid 1px #707070;
+    box-shadow: 0 0 5px 2px lightgoldenrodyellow;
+}
+
+.place-list {
+    list-style-type: none;
+    padding-left: 0;
+    cursor: pointer;
+}
+
+.place-list-item {
+    cursor: pointer;
+    width: 100%;
+    padding-bottom: 2px;
+    padding-top: 2px;
+    border-bottom: 1px solid lightgoldenrodyellow;
+}
+
+.place-list-item:last-child {
+    border-bottom: none;
+}
+
+.place-list-item:hover {
+    background: PaleGoldenRod;
+    color: black;
+    cursor: pointer;
+}
+
+.place-list-item-label {
+    cursor: pointer;
+}
+
+.map-infowindow-fq {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.tip-author {
+    font-weight: bold;
+}
+
+.tip-body {
+    padding-bottom: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+.map-icon-label .map-icon {
+    font-size: 24px;
+    color: #FFFFFF;
+    line-height: 48px;
+    text-align: center;
+    white-space: nowrap;
+}
