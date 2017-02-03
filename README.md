@@ -56,7 +56,32 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
 ### Structure
 
 #### Place class
- * To store a place data: title, location, type, Google Place ID, Foursquare ID.
+ To store a place data: title, location, type, Google Place ID, Foursquare ID.
+ 
+ Functions to handle a place:
+ * setMarker: To add a Google Map marker
+ * setVisible: To change the place's visibility, and show/hide its marker on the map
+ * setInfoWindow: To add a Google InfoWindow, and fill it with the place's title and retrieving Foursquare's tips
+ * showInfoWindow: show the place's InfoWindow on the map
+ * hideInfoWIndow: hide the place's InfoWindow
+ * selectPlace: select or not the place
+ 
+#### ViewModel
+ Overall view model for the screen
+ 
+ Binded observables:
+ * searchingText: To search between the places
+ * navigationVisible: To show/hide the places' list
+ * places: places array
+ * visiblePlaces: computed observable for visible places
+ 
+ Functions:
+ * fitZoom: To fit the map zoom to the markers
+ * setMenuVisible: hide/show the side bar
+ * changeSearch: To handle the changing of searchingText
+ 
+#### Custom binding
+
 
 
 ## Sources
