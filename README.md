@@ -164,11 +164,40 @@ In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/j
  
 With the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L54) function the user will be notified that the Map API loading is failed.
 
+#### Loading, saving the places
+For further usage the places' information automatically saved to localStorage by knockout computed obsevable. It will help to implement adding new places function:
+ ```
+    // using knockout's mapping to select which element of the Place class
+    // should be ignoring when its is copied
+    var mapping_options = {
+        'ignore': ['lat', 'lng', 'selected', 'visible', 'marker',
+                   'ownInfoWindow', 'ownInfo', 'hideInfoWindow',
+                   'selectPlace', 'setInfoWindow', 'setMarker',
+                   'setVisible', 'showInfoWindow']
+      };
 
+    ko.computed(function() {
+        // store a copy to local storage
+        localStorage.setItem('janoss-places', ko.mapping.toJSON(
+            this.places, mapping_options));
+      }.bind(this)).extend({
+        rateLimit: {
+            timeout: 500,
+            method: 'notifyWhenChangesStop'
+          }
+      });
+ ```
+
+Loading places from localStorage:
+ ```
+ var neighborhoodPlaces = ko.utils.parseJson(localStorage.getItem(
+    'janoss-places'));
+ ```
 
 ## Sources
   * Udacity Full Stack nanodegree
   * [Foursquare For Developers](https://developer.foursquare.com/)
   * [Knockout.js](http://knockoutjs.com/)
+  * [Ryan Niemeyer](https://github.com/rniemeyer) 
 
 [home_page_picture]: https://github.com/janosvincze/neighborhood_map/blob/master/screenshot/map.png "Home page"
