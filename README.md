@@ -59,12 +59,12 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  To store a place data: title, location, type, Google Place ID, Foursquare ID.
  
  Functions to handle a place:
- * setMarker: To add a Google Map marker
- * setVisible: To change the place's visibility, and show/hide its marker on the map
- * setInfoWindow: To add a Google InfoWindow, and fill it with the place's title and retrieving Foursquare's tips
- * showInfoWindow: show the place's InfoWindow on the map
- * hideInfoWIndow: hide the place's InfoWindow
- * selectPlace: select or not the place
+ * [setMarker](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L94): To add a Google Map marker
+ * [setVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L106): To change the place's visibility, and show/hide its marker on the map
+ * [setInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L112): To add a Google InfoWindow, and fill it with the place's title and retrieving Foursquare's tips
+ * [showInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L164): show the place's InfoWindow on the map
+ * [hideInfoWIndow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L172): hide the place's InfoWindow
+ * [selectPlace](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L179): select or not the place
  
 #### ViewModel
  Overall view model for the screen
@@ -76,11 +76,59 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  * visiblePlaces: computed observable for visible places
  
  Functions:
- * fitZoom: To fit the map zoom to the markers
- * setMenuVisible: hide/show the side bar
- * changeSearch: To handle the changing of searchingText
+ * [fitZoom](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L205): To fit the map zoom to the markers
+ * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L214): hide/show the side bar
+ * [changeSearch](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L224): To handle the changing of searchingText
  
 #### Custom binding
+ Custom binding to the map:
+ 
+     ```
+     ko.bindingHandlers.map = {
+    init: function(element, valueAccessor, allBindingsAccessor,
+        viewModel) {
+        // set the position
+        var position = new google.maps.LatLng(
+            allBindingsAccessor().latitude(),
+            allBindingsAccessor().longitude());
+        // creating the marker
+        var marker = new google.maps.Marker({
+            map: allBindingsAccessor().map,
+            position: position,
+            title: allBindingsAccessor().title(),
+            animation: google.maps.Animation.DROP,
+            icon: icons[allBindingsAccessor().place_type()].icon,
+            id: allBindingsAccessor().id()
+          });
+
+        var largeInfowindow = new google.maps.InfoWindow();
+
+        // set the place's marker and InfoWindow
+        viewModel.setMarker(marker);
+        viewModel.setInfoWindow(largeInfowindow);
+
+        markers.push(marker);
+        viewModel._mapMarker = marker;
+      },
+    update: function(element, valueAccessor, allBindingsAccessor,
+        viewModel) {
+        var latlng = new google.maps.LatLng(
+            allBindingsAccessor().latitude(),
+            allBindingsAccessor().longitude());
+        viewModel._mapMarker.setPosition(latlng);
+
+        // set the place's visibility
+        viewModel.setVisible(viewModel.visible());
+
+        // show or hide the InfoWindow
+        if (viewModel.selected()) {
+          viewModel.showInfoWindow();
+        } else {
+          viewModel.hideInfoWindow();
+        }
+      }
+  };
+     ```
 
 
 
