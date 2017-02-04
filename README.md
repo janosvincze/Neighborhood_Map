@@ -10,7 +10,7 @@
  1. Clone [this repository](https://github.com/janosvincze/neighborhood_map.git)
 
     ```
-    git clone https://github.com/janosvincze/neighborhood_map.git
+    git clone https://github.com/janosvincze/neighborhood_map.git YOUR_FOLDER
     ```
 
  2. Get a [Google's Map API key](https://developers.google.com/maps/documentation/javascript/get-api-key).
@@ -30,6 +30,32 @@
     var fq_clientID = 'YOUR_CLIENT_ID';
     var fq_clientSecret = 'YOUR_CLIENT_SECRET';
     ```
+ 4. Open the app:
+  * File based: open in your web browser the following file: YOUR_FOLDER\index.html
+  * Using [Python](https://wiki.python.org/moin/BeginnersGuide/Download) based SimpleHTTPServer:
+  
+    ```
+    cd YOUR_FOLDER
+    python -m SimpleHTTPServer 1337
+    ```
+    
+    Or if you are using Python 3.x or higher, you'd use:
+    
+    ```
+    cd YOUR_FOLDER
+    python -m http.server 1337
+    ```
+    
+    Now you should be able access the app in your web browser at: [localhost:1337](localhost:1337)
+  * [Fenix web server](http://fenixwebserver.com/)
+    After installing Fenix, choose Web Servers menu -> New server and add YOUR_FOLDER path, and the chosen port (e.g. 1337). And start the server with 'play' button. Now you should be able to access the app at: [localhost:1337](localhost:1337)
+    
+### Used modules
+All the necessary files are included in the repository at the [modules](https://github.com/janosvincze/neighborhood_map/blob/master/modules/) dictionary. 
+You can easily download the latest ones from the following sites:
+* [jQuery](http://jquery.com/download/) save as ```YOUR_FOLDER/modules/jquery.mi.js```
+* [Knockout.js](http://knockoutjs.com/downloads/index.html) save as ```YOUR_FOLDER/modules/knockout-latest.js```
+* [Knockout.js mapping plugin](https://github.com/SteveSanderson/knockout.mapping/tree/master/build/output) save as ```knockout.mapping-latest.js```
 
 ## User's manual
 The site should be intuitive to use. You can select a place by clicking to its marker on the map, or clicking its name on the menu (left side). You can also search between places by name using the input field on the side bar.
@@ -61,7 +87,6 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  Functions to handle a place:
  * [setMarker](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L94): To add a Google Map marker
  * [setVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L106): To change the place's visibility, and show/hide its marker on the map
- * [setInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L112): To add a Google InfoWindow, and fill it with the place's title and retrieving Foursquare's tips
  * [showInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L164): show the place's InfoWindow on the map
  * [hideInfoWIndow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L172): hide the place's InfoWindow
  * [selectPlace](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L179): select or not the place
@@ -77,15 +102,7 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  
  Functions:
  * [fitZoom](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L205): To fit the map zoom to the markers
- * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L214): hide/show the side bar by changing its style
- 
-  ```
-     if (self.navigationVisible()) {
-          $('.navigation_side').css('display', 'initial');
-     } else {
-          $('.navigation_side').css('display', 'none');
-     }
-  ```
+ * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L214): hide/show the side bar
  * [changeSearch](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L224): To handle the changing of searchingText
  
 #### Custom binding
@@ -94,28 +111,25 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  * In the update callback: handling the place's marker visibility and show/hide its InfoWindow
  
 ```javascript
- ko.bindingHandlers.map = {
+ko.bindingHandlers.map = {
     init: function(element, valueAccessor, allBindingsAccessor,
         viewModel) {
         // set the position
         var position = new google.maps.LatLng(
-            allBindingsAccessor().latitude(),
-            allBindingsAccessor().longitude());
+            allBindingsAccessor().latitude,
+            allBindingsAccessor().longitude);
         // creating the marker
         var marker = new google.maps.Marker({
             map: allBindingsAccessor().map,
             position: position,
-            title: allBindingsAccessor().title(),
+            title: allBindingsAccessor().title,
             animation: google.maps.Animation.DROP,
-            icon: icons[allBindingsAccessor().place_type()].icon,
-            id: allBindingsAccessor().id()
+            icon: icons[allBindingsAccessor().placeType].icon,
+            id: allBindingsAccessor().id
           });
 
-        var largeInfowindow = new google.maps.InfoWindow();
-
-        // set the place's marker and InfoWindow
+        // set the place's marker
         viewModel.setMarker(marker);
-        viewModel.setInfoWindow(largeInfowindow);
 
         markers.push(marker);
         viewModel._mapMarker = marker;
@@ -123,8 +137,8 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
     update: function(element, valueAccessor, allBindingsAccessor,
         viewModel) {
         var latlng = new google.maps.LatLng(
-            allBindingsAccessor().latitude(),
-            allBindingsAccessor().longitude());
+            allBindingsAccessor().latitude,
+            allBindingsAccessor().longitude);
         viewModel._mapMarker.setPosition(latlng);
 
         // set the place's visibility
