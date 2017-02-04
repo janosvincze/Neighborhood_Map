@@ -14,7 +14,7 @@
     ```
 
  2. Get a [Google's Map API key](https://developers.google.com/maps/documentation/javascript/get-api-key).
-  Change my API key to yours one in [index.html](https://github.com/janosvincze/neighborhood_map/blob/master/index.html#L64):
+  Change my API key to yours in [index.html](https://github.com/janosvincze/neighborhood_map/blob/master/index.html#L64):
 
     ```
     <script async defer
@@ -24,7 +24,7 @@
     ```
 
  3. Get a [Foursquare API key](https://foursquare.com/developers/register).
-  Cahnge my API key to yours one in [app.js](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L7):
+  Cahnge my API key to yours in [app.js](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L7):
 
     ```
     var fq_clientID = 'YOUR_CLIENT_ID';
@@ -77,14 +77,24 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  
  Functions:
  * [fitZoom](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L205): To fit the map zoom to the markers
- * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L214): hide/show the side bar
+ * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L214): hide/show the side bar by changing its style
+ 
+  ```
+     if (self.navigationVisible()) {
+          $('.navigation_side').css('display', 'initial');
+     } else {
+          $('.navigation_side').css('display', 'none');
+     }
+  ```
  * [changeSearch](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L224): To handle the changing of searchingText
  
 #### Custom binding
  Custom binding to the map:
+ * In the init callback: create and initialize the place Google's marker and InfoWindow
+ * In the update callback: handling the place's marker visibility and show/hide its InfoWindow
  
 ```javascript
-     ko.bindingHandlers.map = {
+ ko.bindingHandlers.map = {
     init: function(element, valueAccessor, allBindingsAccessor,
         viewModel) {
         // set the position
@@ -129,6 +139,30 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
       }
   };
 ```
+
+#### Creating the map and activating the overall view modell
+After Google Map API loaded successfully the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L32) function will be called. 
+If the API cannot be loaded, the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L54) function will be called.
+```
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=&[YOUR_API_KEY]callback=createMap"
+        onerror="googleError()">
+    </script>
+```
+
+In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L32) function:
+ * create the Google Map:
+ 
+   ```
+   map = new google.maps.Map($('#map')[0], myOptions);
+   ```
+ * activate the view model:
+ 
+   ```
+   ko.applyBindings(viewModel);
+   ```
+ 
+With the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L54) function the user will be notified that the Map API loading is failed.
 
 
 
