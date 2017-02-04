@@ -1,32 +1,50 @@
 var map;
+var infoWindow;
 var markers = [];
+var active_marker;
 var defaultIcon;
 var selectedIcon;
 
 // Foursquare client's ID and secret key
-var fq_clientID = '135T3OKIMCJSGLQFSPX0MJ0W4EWPVVIH0J00OZGIQ0KCN101';
-var fq_clientSecret = '14O3UYKHEXTVI1QVTMY1KFWU3EJM44MT4LA1YVCZREFWWWIJ';
+var FQ_CLIENT_ID = '135T3OKIMCJSGLQFSPX0MJ0W4EWPVVIH0J00OZGIQ0KCN101';
+var FQ_CLIENT_SECRET = '14O3UYKHEXTVI1QVTMY1KFWU3EJM44MT4LA1YVCZREFWWWIJ';
 
 // Defining icons from Google's collection
 var iconBase = 'https://maps.google.com/mapfiles/kml/pal2/';
 var icons = {
     restaurant: {
-        name: 'Restaurant',
+        name: 'restaurant',
         icon: iconBase + 'icon40.png'
       },
     coffee: {
-        name: 'Coffee',
+        name: 'coffee',
         icon: iconBase + 'icon62.png'
       },
     bar: {
-        name: 'Bar',
+        name: 'bar',
         icon: iconBase + 'icon27.png'
       },
     sport: {
-        name: 'Sport',
+        name: 'sport',
         icon: iconBase + 'icon57.png'
       }
   };
+
+var INFO_WINDOW = '\
+        <div class="map-infowindow">\
+            <div class="map-infowindow-title">\
+                <strong>{{title}}</strong>\
+            </div>\
+            <ul class="map-infowindow-fq">\
+                {{tip}}\
+            </ul>\
+        </div>';
+
+var FQ_TIP = '\
+        <li class="fq-tip">\
+            <div class="tip-author">{{author}}</div>\
+            <div class="tip-body">{{body}}</div>\
+        </li>';
 
 // Create Google Map, after API successfully loaded
 function createMap() {
@@ -43,6 +61,7 @@ function createMap() {
       mapTypeId: 'terrain'
     };
   map = new google.maps.Map($('#map')[0], myOptions);
+  infoWindow = new google.maps.InfoWindow();
 
   // Activates knockout
   ko.applyBindings(viewModel);
@@ -69,110 +88,116 @@ function makeMarkerIcon(markerColor) {
 }
 
 // Class to represent a single place
-var Place = function(title, location, place_id, venue_id, id, place_type) {
+var Place = function(title, location, placeID, venueID, id, placeType) {
     var self = this;
-    self.id = ko.observable(id);
-    self.title = ko.observable(title);
-    self.location = ko.observable(location);
-    self.lat = ko.observable(location.split(',')[0]);
-    self.lng = ko.observable(location.split(',')[1]);
-    // Google's Place_ID
-    self.place_id = ko.observable(place_id);
+    this.id = id;
+    this.title = title;
+    this.location = location;
+    this.lat = location.split(',')[0];
+    this.lng = location.split(',')[1];
+    // Google's placeID
+    this.placeID = placeID;
     // Foursquare's Venue ID
-    self.venue_id = ko.observable(venue_id);
-    self.place_type = ko.observable(place_type);
-    self.selected = ko.observable(false);
-    self.visible = ko.observable(true);
+    this.venueID = venueID;
+    this.placeType = placeType;
+    this.selected = ko.observable(false);
+    this.visible = ko.observable(true);
     // the place's marker
-    self.marker = ko.observable();
-    // the place's InfoWindow
-    self.ownInfoWindow = ko.observable();
+    this.marker;
     // to store InfoWindow's content
-    self.ownInfo = ko.observable('');
+    this.ownInfo = '';
+
+    // filling InfoWindow's content using HTML templates
+    var tmpl = INFO_WINDOW;
+    var tmpl_row = FQ_TIP;
+    var tipList = '';
+    tmpl = tmpl.replace('{{title}}', self.title);
+
+    // retrieve Foursquare's tips, if venueID is exist
+    if (self.venueID) {
+      $.ajax({
+          dataType: 'jsonp',
+          url: 'https://api.foursquare.com/v2/venues/' +
+              self.venueID + '/tips' +
+              '?client_id=' + FQ_CLIENT_ID +
+              '&client_secret=' + FQ_CLIENT_SECRET +
+              '&v=20170101',
+          success: function(response) {
+            // adding the first two tips using HTML template
+            // if the place has a rating
+            if (response.response.tips.items.length > 0) {
+                response.response.tips.items.slice(
+                    0, 2).forEach(function(tip) {
+                    tipList += tmpl_row.replace(
+                        '{{author}}', tip.user.firstName).replace(
+                        '{{body}}', tip.text);
+                    });
+            } else {
+                tipList = 'This place is not rated yet.'
+            }
+            tmpl = tmpl.replace('{{tip}}',
+                  tipList);
+            self.ownInfo = tmpl;
+            },
+          error: function() {
+             tmpl = tmpl.replace('{{tip}}',
+                  'Something went wrong,\
+                   Communication with Foursquare has been failed!');
+             self.ownInfo = tmpl;
+          }
+        });
+    } else {
+      tmpl = tmpl.replace('{{tip}}', tipList);
+      self.ownInfo = tmpl;
+    }
 
     // setup the place's marker
     this.setMarker = function(marker) {
-        self.marker(marker);
+        self.marker = marker;
         // add Click event to the marker
-        self.marker().addListener('click', function() {
-            self.ownInfoWindow().setContent(self.ownInfo());
-            self.marker().setAnimation(google.maps.Animation.BOUNCE);
-            self.ownInfoWindow().open(map, self.marker());
-            self.marker().icon = icons[self.place_type()].icon;
+        self.marker.addListener('click', function() {
+            if (active_marker) {
+                active_marker.setAnimation(null); //close();
+            }
+            infoWindow.setContent(self.ownInfo);
+            self.marker.setAnimation(google.maps.Animation.BOUNCE);
+            active_marker = self.marker;
+            infoWindow.open(map, self.marker);
+            self.marker.icon = icons[self.placeType].icon;
+
+            infoWindow.addListener('closeclick',function() {
+                self.hideInfoWindow();
+            });
           });
       }.bind(this);
 
     // setting the place's visibility, and show/hide its marker
     this.setVisible = function(visible) {
         self.visible(visible);
-        self.marker().setVisible(self.visible());
-      }.bind(this);
-
-    // setting the place's InfoWindow
-    this.setInfoWindow = function(infoWindow) {
-        self.ownInfoWindow(infoWindow);
-        // order infoWindow to its marker
-        self.ownInfoWindow().marker = self.marker();
-        // filling InfoWindow's content using html templates
-        var tmpl = document.getElementById('tmp-infowindow').innerHTML;
-        var tmpl_row = document.getElementById('tmp-fq-row').innerHTML;
-        var tipList = '';
-        tmpl = tmpl.replace('{{title}}', self.title());
-
-        // retrieve Foursquare's tips, if venue_id is exist
-        if (self.venue_id()) {
-          $.ajax({
-              dataType: 'jsonp',
-              url: 'https://api.foursquare.com/v2/venues/' +
-                  self.venue_id() + '/tips' +
-                  '?client_id=' + fq_clientID +
-                  '&client_secret=' + fq_clientSecret +
-                  '&v=20170101',
-              success: function(response) {
-                  // adding the first two tips using HTML template
-                  response.response.tips.items.slice(
-                      0, 2).forEach(function(tip) {
-                      tipList += tmpl_row.replace(
-                          '{{author}}',
-                          tip.user.firstName
-                      ).replace(
-                          '{{body}}', tip
-                          .text);
-                    });
-                  tmpl = tmpl.replace('{{tip}}',
-                      tipList);
-                  self.ownInfo(tmpl);
-                }
-            });
-        } else {
-          tmpl = tmpl.replace('{{tip}}', tipList);
-          self.ownInfo(tmpl);
-        }
-
-        // add the content to the InfoWindow
-        self.ownInfoWindow().setContent(self.ownInfo());
-
-        // add closing event to the InfoWindow
-        self.ownInfoWindow().addListener('closeclick', function() {
-            self.ownInfoWindow().close();
-            self.marker().setAnimation(null);
-            self.marker().icon = icons[self.place_type()].icon;
-          });
+        self.marker.setVisible(self.visible());
       }.bind(this);
 
     // show the place's InfoWindow on the map
     this.showInfoWindow = function() {
-        self.marker().setAnimation(google.maps.Animation.BOUNCE);
-        self.ownInfoWindow().setContent(self.ownInfo());
-        self.ownInfoWindow().open(map, self.marker());
-        self.marker().icon = selectedIcon;
+        if (active_marker) {
+            active_marker.setAnimation(null); //close();
+        }
+        self.marker.setAnimation(google.maps.Animation.BOUNCE);
+        infoWindow.setContent(self.ownInfo);
+
+        infoWindow.addListener('closeclick',function() {
+            self.hideInfoWindow();
+        });
+
+        active_marker = self.marker;
+        infoWindow.open(map, self.marker);
+
       }.bind(this);
 
-    // hide the place's InfoWindow on the map
+    // hide the place's InfoWindow from the map
     this.hideInfoWindow = function() {
-        self.ownInfoWindow().close();
-        self.marker().setAnimation(null);
-        self.marker().icon = icons[self.place_type()].icon;
+        infoWindow.close();
+        self.marker.setAnimation(null);
       }.bind(this);
 
     // select or not the place
@@ -190,8 +215,8 @@ var ViewModel = function(places) {
     self.navigationVisible = ko.observable(true);
     // initializing places from the parameter
     self.places = ko.observableArray(places.map(function(place) {
-        return new Place(place.title, place.location, place.place_id,
-                        place.venue_id, 0, place.place_type);
+        return new Place(place.title, place.location, place.placeID,
+                        place.venueID, 0, place.placeType);
       }));
 
     // selecting visible places to show at the side bar, and on the map
@@ -213,18 +238,13 @@ var ViewModel = function(places) {
     // hide/show the side bar
     self.setMenuVisible = function() {
         self.navigationVisible(!self.navigationVisible());
-        if (self.navigationVisible()) {
-          $('.navigation_side').css('display', 'initial');
-        } else {
-          $('.navigation_side').css('display', 'none');
-        }
       }.bind(this);
 
     // changing the search field
     self.changeSearch = function() {
         if (self.searchingText().length > 0) {
           self.places().forEach(function(place) {
-              place.setVisible(place.title().toLowerCase()
+              place.setVisible(place.title.toLowerCase()
                   .search(self.searchingText().toLowerCase()) >=
                   0);
             });
@@ -262,23 +282,20 @@ ko.bindingHandlers.map = {
         viewModel) {
         // set the position
         var position = new google.maps.LatLng(
-            allBindingsAccessor().latitude(),
-            allBindingsAccessor().longitude());
+            allBindingsAccessor().latitude,
+            allBindingsAccessor().longitude);
         // creating the marker
         var marker = new google.maps.Marker({
             map: allBindingsAccessor().map,
             position: position,
-            title: allBindingsAccessor().title(),
+            title: allBindingsAccessor().title,
             animation: google.maps.Animation.DROP,
-            icon: icons[allBindingsAccessor().place_type()].icon,
-            id: allBindingsAccessor().id()
+            icon: icons[allBindingsAccessor().placeType].icon,
+            id: allBindingsAccessor().id
           });
 
-        var largeInfowindow = new google.maps.InfoWindow();
-
-        // set the place's marker and InfoWindow
+        // set the place's marker
         viewModel.setMarker(marker);
-        viewModel.setInfoWindow(largeInfowindow);
 
         markers.push(marker);
         viewModel._mapMarker = marker;
@@ -286,8 +303,8 @@ ko.bindingHandlers.map = {
     update: function(element, valueAccessor, allBindingsAccessor,
         viewModel) {
         var latlng = new google.maps.LatLng(
-            allBindingsAccessor().latitude(),
-            allBindingsAccessor().longitude());
+            allBindingsAccessor().latitude,
+            allBindingsAccessor().longitude);
         viewModel._mapMarker.setPosition(latlng);
 
         // set the place's visibility
@@ -311,57 +328,57 @@ if ((neighborhoodPlaces == undefined) || (neighborhoodPlaces.length < 1)) {
   var neighborhoodPlaces = [{
       'title': 'Beszálló',
       'location': '47.4975069,19.0508149',
-      'place_id': 'ChIJa_ni-EHcQUcRZfqefHRuQlY',
-      'venue_id': '57f39c9fcd107cfe942d55bc',
-      'place_type': 'restaurant'
+      'placeID': 'ChIJa_ni-EHcQUcRZfqefHRuQlY',
+      'venueID': '57f39c9fcd107cfe942d55bc',
+      'placeType': 'restaurant'
     }, {
       'title': 'Konyha',
       'location': '47.4981425,19.0558193',
-      'place_id': 'ChIJVzC6AWrcQUcRallG8lBArlo',
-      'venue_id': '53bd227b498e5114f56ff20a',
-      'place_type': 'restaurant'
+      'placeID': 'ChIJVzC6AWrcQUcRallG8lBArlo',
+      'venueID': '53bd227b498e5114f56ff20a',
+      'placeType': 'restaurant'
     }, {
       'title': 'Szimpla Kert',
       'location': '47.4969627,19.0622091',
-      'place_id': 'ChIJ5Q3SoELcQUcRpB0x-9NCdyY',
-      'venue_id': '4b630e1af964a52020602ae3',
-      'place_type': 'restaurant'
+      'placeID': 'ChIJ5Q3SoELcQUcRpB0x-9NCdyY',
+      'venueID': '4b630e1af964a52020602ae3',
+      'placeType': 'restaurant'
     }, {
       'title': 'Bestia',
       'location': '47.5009522,19.0507935',
-      'place_id': 'ChIJzXXT02rcQUcRrua6UgQiRmQ',
-      'venue_id': '55427fd1498ecd5cf6ddf365',
-      'place_type': 'restaurant'
+      'placeID': 'ChIJzXXT02rcQUcRrua6UgQiRmQ',
+      'venueID': '55427fd1498ecd5cf6ddf365',
+      'placeType': 'restaurant'
     }, {
       'title': 'Coyote Coffee & Deli',
       'location': '47.5058258,19.03719',
-      'place_id': 'ChIJR2tBdhncQUcRd-_Kb4MiSvY',
-      'venue_id': '4c0e7a87512f76b0e8df7a11',
-      'place_type': 'coffee'
+      'placeID': 'ChIJR2tBdhncQUcRd-_Kb4MiSvY',
+      'venueID': '4c0e7a87512f76b0e8df7a11',
+      'placeType': 'coffee'
     }, {
       'title': 'Damniczki Budapest',
       'location': '47.5029682,19.052598',
-      'place_id': 'ChIJ_6zzxxTcQUcRWuOG6o6UVrw',
-      'venue_id': '572f5af4498e935b405bc547',
-      'place_type': 'restaurant'
+      'placeID': 'ChIJ_6zzxxTcQUcRWuOG6o6UVrw',
+      'venueID': '572f5af4498e935b405bc547',
+      'placeType': 'restaurant'
     }, {
       'title': 'Déryné Bisztró',
       'location': '47.4972344,19.0294897',
-      'place_id': 'ChIJM1KEgCTcQUcRnr7f9tjnbmo',
-      'venue_id': '4c5fba3bb36eb713f8049ad2',
-      'place_type': 'restaurant'
+      'placeID': 'ChIJM1KEgCTcQUcRnr7f9tjnbmo',
+      'venueID': '4c5fba3bb36eb713f8049ad2',
+      'placeType': 'restaurant'
     }, {
       'title': 'Bazaar Eclectica',
       'location': '47.495559,19.03971',
-      'place_id': 'ChIJ09G4VDncQUcRqi8V8PSTlLU',
-      'venue_id': '5731a9b3498e6b203df9f1a8',
-      'place_type': 'restaurant'
+      'placeID': 'ChIJ09G4VDncQUcRqi8V8PSTlLU',
+      'venueID': '5731a9b3498e6b203df9f1a8',
+      'placeType': 'restaurant'
     }, {
       'title': 'Oxygen Wellness',
       'location': '47.491152,19.0358403',
-      'place_id': 'ChIJs4a1dTrcQUcRhoR7sjnXUIo',
-      'venue_id': '4d52c5d39ffc236aafc830a7',
-      'place_type': 'sport'
+      'placeID': 'ChIJs4a1dTrcQUcRhoR7sjnXUIo',
+      'venueID': '4d52c5d39ffc236aafc830a7',
+      'placeType': 'sport'
     }];
 };
 
