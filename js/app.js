@@ -1,9 +1,8 @@
 var map;
 var infoWindow;
 var markers = [];
-var active_marker;
-var defaultIcon;
-var selectedIcon;
+var bounds;
+var active_place;
 
 // Foursquare client's ID and secret key
 var FQ_CLIENT_ID = '135T3OKIMCJSGLQFSPX0MJ0W4EWPVVIH0J00OZGIQ0KCN101';
@@ -30,6 +29,7 @@ var icons = {
       }
   };
 
+// InfoWindow Content template
 var INFO_WINDOW = '\
         <div class="map-infowindow">\
             <div class="map-infowindow-title">\
@@ -40,6 +40,7 @@ var INFO_WINDOW = '\
             </ul>\
         </div>';
 
+// InfoWindow Content Foursquare Tip template
 var FQ_TIP = '\
         <li class="fq-tip">\
             <div class="tip-author">{{author}}</div>\
@@ -48,9 +49,6 @@ var FQ_TIP = '\
 
 // Create Google Map, after API successfully loaded
 function createMap() {
-
-  defaultIcon = makeMarkerIcon('0091ff');
-  selectedIcon = makeMarkerIcon('cc91ff');
 
   var myOptions = {
       zoom: 3,
@@ -62,6 +60,10 @@ function createMap() {
     };
   map = new google.maps.Map($('#map')[0], myOptions);
   infoWindow = new google.maps.InfoWindow();
+  bounds = new google.maps.LatLngBounds();
+  google.maps.event.addDomListener(window, 'resize', function() {
+                map.fitBounds(bounds);
+    });
 
   // Activates knockout
   ko.applyBindings(viewModel);
@@ -72,19 +74,6 @@ function createMap() {
 // Alert the user if Google's Map API cannot loaded
 function googleError() {
   alert('Something went wrong. Google Map API cannot be loaded!');
-}
-
-// Function to make marker icon with given color
-function makeMarkerIcon(markerColor) {
-  var markerImage = new google.maps.MarkerImage(
-      'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|' +
-      markerColor +
-      '|40|_|%E2%80%A2',
-      new google.maps.Size(21, 34),
-      new google.maps.Point(0, 0),
-      new google.maps.Point(10, 34),
-      new google.maps.Size(21, 34));
-  return markerImage;
 }
 
 // Class to represent a single place
@@ -154,16 +143,10 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
     // setup the place's marker
     this.setMarker = function(marker) {
         self.marker = marker;
+        bounds.extend(marker.getPosition());
         // add Click event to the marker
         self.marker.addListener('click', function() {
-            if (active_marker) {
-                active_marker.setAnimation(null); //close();
-            }
-            infoWindow.setContent(self.ownInfo);
-            self.marker.setAnimation(google.maps.Animation.BOUNCE);
-            active_marker = self.marker;
-            infoWindow.open(map, self.marker);
-            self.marker.icon = icons[self.placeType].icon;
+            self.showInfoWindow();
 
             infoWindow.addListener('closeclick',function() {
                 self.hideInfoWindow();
@@ -179,8 +162,10 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
 
     // show the place's InfoWindow on the map
     this.showInfoWindow = function() {
-        if (active_marker) {
-            active_marker.setAnimation(null); //close();
+        // stop the previously selected place's marker animation
+        if (active_place) {
+            active_place.marker.setAnimation(null);
+            active_place.selected(false);
         }
         self.marker.setAnimation(google.maps.Animation.BOUNCE);
         infoWindow.setContent(self.ownInfo);
@@ -189,8 +174,10 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
             self.hideInfoWindow();
         });
 
-        active_marker = self.marker;
+        // now this is the selected place
+        active_place = this;
         infoWindow.open(map, self.marker);
+        this.selected(true);
 
       }.bind(this);
 
@@ -198,11 +185,12 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
     this.hideInfoWindow = function() {
         infoWindow.close();
         self.marker.setAnimation(null);
+        self.selected(false);
       }.bind(this);
 
     // select or not the place
     this.selectPlace = function() {
-        self.selected(!self.selected());
+        self.selected() ? (self.hideInfoWindow()) : (self.showInfoWindow());
       }.bind(this);
   };
 
@@ -228,10 +216,6 @@ var ViewModel = function(places) {
 
     // fit the map's zoom to the markers
     self.fitZoom = function() {
-        var bounds = new google.maps.LatLngBounds();
-        for (var i = 0; i < markers.length; i++) {
-          bounds.extend(markers[i].getPosition());
-        }
         map.fitBounds(bounds);
       }.bind(this);
 
