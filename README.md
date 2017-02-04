@@ -83,7 +83,7 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
 #### Custom binding
  Custom binding to the map:
  
-     ```
+```javascript
      ko.bindingHandlers.map = {
     init: function(element, valueAccessor, allBindingsAccessor,
         viewModel) {
@@ -128,7 +128,7 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
         }
       }
   };
-     ```
+```
 
 
 
