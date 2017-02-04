@@ -18,13 +18,13 @@ html {
     float: left;
 }
 
-@media (min-width:481px) {
+@media only screen and (min-device-width:800px) and (min-width:481px) {
     .navigation-side {
         display: initial;
     }
 }
 
-@media (max-width:480px) {
+@media only screen and (min-device-width:800px) and (max-width:480px) {
     .navigation-side {
         display: none;
     }
@@ -132,6 +132,13 @@ html {
 .map-infowindow-fq {
     list-style-type: none;
     padding-left: 0;
+}
+
+.map-infowindow-fq-logo {
+    float: right;
+    width: 40px;
+    height: 50px;
+    padding-top: 12px;
 }
 
 .tip-author {

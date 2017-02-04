@@ -35,6 +35,9 @@ var INFO_WINDOW = '\
             <div class="map-infowindow-title">\
                 <strong>{{title}}</strong>\
             </div>\
+            <a href="https://foursquare.com" target="_blank">\
+            <img class="map-infowindow-fq-logo"\
+                src="static/img/foursquare_logo.png"></a>\
             <ul class="map-infowindow-fq">\
                 {{tip}}\
             </ul>\
