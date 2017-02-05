@@ -24,7 +24,7 @@
     ```
 
  3. Get a [Foursquare API key](https://foursquare.com/developers/register).
-  Change my API key to yours in [app.js](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L13):
+  Change my API key to yours in [app.js](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L14):
 
     ```
     var fq_clientID = 'YOUR_CLIENT_ID';
@@ -85,11 +85,11 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  To store a place data: title, location, type, Google Place ID, Foursquare ID.
  
  Functions to handle a place:
- * [setMarker](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L156): To add a Google Map marker
- * [setVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L170): To change the place's visibility, and show/hide its marker on the map
- * [showInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L176): show the place's InfoWindow on the map
- * [hideInfoWIndow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L197): hide the place's InfoWindow
- * [selectPlace](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L204): select or not the place
+ * [setMarker](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L158): To add a Google Map marker
+ * [setVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L172): To change the place's visibility, and show/hide its marker on the map
+ * [showInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L178): show the place's InfoWindow on the map
+ * [hideInfoWIndow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L199): hide the place's InfoWindow
+ * [selectPlace](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L206): select or not the place
  
 ##### Creating InfoWindow's content
  Using INFO_WINDOW and FQ_TIP constant as a template to create InfoWindow content:
@@ -162,9 +162,9 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  * visiblePlaces: computed observable for visible places
  
  Functions:
- * [fitZoom](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L230): To fit the map zoom to the markers
- * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L235): hide/show the side bar
- * [changeSearch](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L240): To handle the changing of searchingText
+ * [fitZoom](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L236): To fit the map zoom to the markers
+ * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L241): hide/show the side bar
+ * [changeSearch](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L246): To handle the changing of searchingText
  
 #### Custom binding
  Custom binding to the map:
@@ -216,8 +216,8 @@ ko.bindingHandlers.map = {
 ```
 
 #### Creating the map and activating the overall view modell
-After Google Map API loaded successfully the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L61) function will be called. 
-If the API cannot be loaded, the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L85) function will be called.
+After Google Map API loaded successfully the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L63) function will be called. 
+If the API cannot be loaded, the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L87) function will be called.
 ```
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=&[YOUR_API_KEY]callback=createMap"
@@ -225,7 +225,7 @@ If the API cannot be loaded, the [googleError](https://github.com/janosvincze/ne
     </script>
 ```
 
-In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L71) function:
+In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L73) function:
  * create the Google Map:
  
    ```
@@ -237,7 +237,7 @@ In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/j
    ko.applyBindings(viewModel);
    ```
  
-With the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L85) function the user will be notified that the Map API loading is failed.
+With the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L87) function the user will be notified that the Map API loading is failed.
 
 #### Loading, saving the places
 For further usage the places' information automatically saved to localStorage by knockout computed obsevable. It will help to implement adding new places function:
