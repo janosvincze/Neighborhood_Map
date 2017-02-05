@@ -64,7 +64,7 @@ The site should be intuitive to use. You can select a place by clicking to its m
 
 ## Developer's manual
 
-### Used technology
+### Used technologies
   * Javascript
   * Knockout.js
   * Google Map API
