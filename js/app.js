@@ -30,12 +30,14 @@ var icons = {
   };
 
 // InfoWindow Content template
+// it was originally in the index.html file in a <template>, but it was moved to
+// here to be clear it is not for a DOM manipulating, just using as a template
 var INFO_WINDOW = '\
         <div class="map-infowindow">\
             <div class="map-infowindow-title">\
                 <strong>{{title}}</strong>\
             </div>\
-            <a href="https://foursquare.com" target="_blank">\
+            <a href="https://foursquare.com/venue/{{venueID}}" target="_blank">\
             <img class="map-infowindow-fq-logo"\
                 src="static/img/foursquare_logo.png"></a>\
             <ul class="map-infowindow-fq">\
@@ -103,7 +105,8 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
     var tmpl = INFO_WINDOW;
     var tmpl_row = FQ_TIP;
     var tipList = '';
-    tmpl = tmpl.replace('{{title}}', self.title);
+    tmpl = tmpl.replace('{{title}}', self.title)
+               .replace('{{venueID}}', self.venueID);
 
     // retrieve Foursquare's tips, if venueID is exist
     if (self.venueID) {
@@ -131,6 +134,7 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
                   tipList);
             self.ownInfo = tmpl;
             },
+          // if an error is raised, it will inform the user in the InfoWindow
           error: function() {
              tmpl = tmpl.replace('{{tip}}',
                   'Something went wrong,\

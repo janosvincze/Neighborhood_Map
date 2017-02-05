@@ -73,9 +73,10 @@ html {
     width: 200px;
 }
 
-.map-infowindow-fq.img {
-    width: 20px;
-    height: 20px;
+@media only screen and (max-device-width:600px) and (max-width:480px) {
+    .map-infowindow {
+        width: 120px;
+    }
 }
 
 .options-box {
