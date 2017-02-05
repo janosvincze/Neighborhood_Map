@@ -14,7 +14,7 @@
     ```
 
  2. Get a [Google's Map API key](https://developers.google.com/maps/documentation/javascript/get-api-key).
-  Change my API key to yours in [index.html](https://github.com/janosvincze/neighborhood_map/blob/master/index.html#L64):
+  Change my API key to yours in [index.html](https://github.com/janosvincze/neighborhood_map/blob/master/index.html#L50):
 
     ```
     <script async defer
@@ -24,7 +24,7 @@
     ```
 
  3. Get a [Foursquare API key](https://foursquare.com/developers/register).
-  Cahnge my API key to yours in [app.js](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L7):
+  Change my API key to yours in [app.js](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L13):
 
     ```
     var fq_clientID = 'YOUR_CLIENT_ID';
@@ -85,11 +85,72 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  To store a place data: title, location, type, Google Place ID, Foursquare ID.
  
  Functions to handle a place:
- * [setMarker](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L94): To add a Google Map marker
- * [setVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L106): To change the place's visibility, and show/hide its marker on the map
- * [showInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L164): show the place's InfoWindow on the map
- * [hideInfoWIndow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L172): hide the place's InfoWindow
- * [selectPlace](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L179): select or not the place
+ * [setMarker](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L156): To add a Google Map marker
+ * [setVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L170): To change the place's visibility, and show/hide its marker on the map
+ * [showInfoWindow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L176): show the place's InfoWindow on the map
+ * [hideInfoWIndow](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L197): hide the place's InfoWindow
+ * [selectPlace](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L204): select or not the place
+ 
+##### Creating InfoWindow's content
+ Using INFO_WINDOW and FQ_TIP constant as a template to create InfoWindow content:
+ ```
+ var INFO_WINDOW = '\
+        <div class="map-infowindow">\
+            <div class="map-infowindow-title">\
+                <strong>{{title}}</strong>\
+            </div>\
+            <a href="https://foursquare.com/venue/{{venueID}}" target="_blank">\
+            <img class="map-infowindow-fq-logo"\
+                src="static/img/foursquare_logo.png"></a>\
+            <ul class="map-infowindow-fq">\
+                {{tip}}\
+            </ul>\
+        </div>';
+
+ var FQ_TIP = '\
+        <li class="fq-tip">\
+            <div class="tip-author">{{author}}</div>\
+            <div class="tip-body">{{body}}</div>\
+        </li>';
+ ```
+ In INFO_WINDOW the {{title}} and {{venueID}} should be replaced with the place's title and Foursquare ID.
+ In FQ_TIP the {{body}} and {{author}} should be replaced with the place's Foursquare tip and its author nickname.
+ 
+ Getting Foursquare' tip with jQuery ajax() asynchronous request:
+  ```
+       $.ajax({
+          dataType: 'jsonp',
+          url: 'https://api.foursquare.com/v2/venues/' +
+              self.venueID + '/tips' +
+              '?client_id=' + FQ_CLIENT_ID +
+              '&client_secret=' + FQ_CLIENT_SECRET +
+              '&v=20170101',
+          success: function(response) {
+            // adding the first two tips using HTML template
+            // if the place has a rating
+            if (response.response.tips.items.length > 0) {
+                response.response.tips.items.slice(
+                    0, 2).forEach(function(tip) {
+                    tipList += tmpl_row.replace(
+                        '{{author}}', tip.user.firstName).replace(
+                        '{{body}}', tip.text);
+                    });
+            } else {
+                tipList = 'This place is not rated yet.'
+            }
+            tmpl = tmpl.replace('{{tip}}',
+                  tipList);
+            self.ownInfo = tmpl;
+            },
+          // if an error is raised, it will inform the user in the InfoWindow
+          error: function() {
+             tmpl = tmpl.replace('{{tip}}',
+                  'Something went wrong,\
+                   Communication with Foursquare has been failed!');
+             self.ownInfo = tmpl;
+          }
+        });
+  ```
  
 #### ViewModel
  Overall view model for the screen
@@ -101,9 +162,9 @@ CSS file: [main.css](https://github.com/janosvincze/neighborhood_map/blob/master
  * visiblePlaces: computed observable for visible places
  
  Functions:
- * [fitZoom](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L205): To fit the map zoom to the markers
- * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L214): hide/show the side bar
- * [changeSearch](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L224): To handle the changing of searchingText
+ * [fitZoom](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L230): To fit the map zoom to the markers
+ * [setMenuVisible](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L235): hide/show the side bar
+ * [changeSearch](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L240): To handle the changing of searchingText
  
 #### Custom binding
  Custom binding to the map:
@@ -155,8 +216,8 @@ ko.bindingHandlers.map = {
 ```
 
 #### Creating the map and activating the overall view modell
-After Google Map API loaded successfully the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L32) function will be called. 
-If the API cannot be loaded, the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L54) function will be called.
+After Google Map API loaded successfully the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L61) function will be called. 
+If the API cannot be loaded, the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L85) function will be called.
 ```
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=&[YOUR_API_KEY]callback=createMap"
@@ -164,7 +225,7 @@ If the API cannot be loaded, the [googleError](https://github.com/janosvincze/ne
     </script>
 ```
 
-In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L32) function:
+In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L71) function:
  * create the Google Map:
  
    ```
@@ -176,7 +237,7 @@ In the [createMap](https://github.com/janosvincze/neighborhood_map/blob/master/j
    ko.applyBindings(viewModel);
    ```
  
-With the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L54) function the user will be notified that the Map API loading is failed.
+With the [googleError](https://github.com/janosvincze/neighborhood_map/blob/master/js/app.js#L85) function the user will be notified that the Map API loading is failed.
 
 #### Loading, saving the places
 For further usage the places' information automatically saved to localStorage by knockout computed obsevable. It will help to implement adding new places function:
