@@ -1,7 +1,12 @@
+// global map variable
 var map;
+// global InfoWindow variable
 var infoWindow;
+// Array for Map markers
 var markers = [];
+// Map bound variable to fit map's zoom to window
 var bounds;
+// To store last active place to unselect and stop animation if focus is changed
 var active_place;
 
 // Foursquare client's ID and secret key
