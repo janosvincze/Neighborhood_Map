@@ -268,7 +268,7 @@ var ViewModel = function(places) {
 
     ko.computed(function() {
         // store a copy to local storage
-        localStorage.setItem('janoss-places', ko.mapping.toJSON(
+        localStorage.setItem('janos09-places', ko.mapping.toJSON(
             this.places, mapping_options));
       }.bind(this)).extend({
         rateLimit: {
@@ -323,10 +323,10 @@ ko.bindingHandlers.map = {
 
 // check local storage for places
 var neighborhoodPlaces = ko.utils.parseJson(localStorage.getItem(
-    'janoss-places'));
+    'janos09-places'));
 
 // if there is no saved places in localStorage, assign some
-if ((neighborhoodPlaces === undefined) || (neighborhoodPlaces.length < 1)) {
+if ((neighborhoodPlaces == undefined) || (neighborhoodPlaces.length < 1)) {
   var neighborhoodPlaces = [{
       'title': 'Beszálló',
       'location': '47.4975069,19.0508149',
