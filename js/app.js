@@ -1,3 +1,4 @@
+"use strict";
 // global map variable
 var map;
 // global InfoWindow variable
@@ -37,25 +38,26 @@ var icons = {
 // InfoWindow Content template
 // it was originally in the index.html file in a <template>, but it was moved to
 // here to be clear it is not for a DOM manipulating, just using as a template
-var INFO_WINDOW = '\
-        <div class="map-infowindow">\
-            <div class="map-infowindow-title">\
-                <strong>{{title}}</strong>\
-            </div>\
-            <a href="https://foursquare.com/venue/{{venueID}}" target="_blank">\
-            <img class="map-infowindow-fq-logo"\
-                src="static/img/foursquare_logo.png"></a>\
-            <ul class="map-infowindow-fq">\
-                {{tip}}\
-            </ul>\
-        </div>';
+var INFO_WINDOW =
+        '<div class="map-infowindow">' +
+        '    <div class="map-infowindow-title">' +
+        '        <strong>{{title}}</strong>' +
+        '   </div>' +
+        '    <a href="https://foursquare.com/venue/{{venueID}}"' +
+        '        target="_blank">' +
+        '    <img class="map-infowindow-fq-logo"' +
+        '        src="static/img/foursquare_logo.png"></a>' +
+        '    <ul class="map-infowindow-fq">' +
+        '        {{tip}}' +
+        '    </ul>' +
+        '</div>';
 
 // InfoWindow Content Foursquare Tip template
-var FQ_TIP = '\
-        <li class="fq-tip">\
-            <div class="tip-author">{{author}}</div>\
-            <div class="tip-body">{{body}}</div>\
-        </li>';
+var FQ_TIP =
+        '<li class="fq-tip">' +
+        '    <div class="tip-author">{{author}}</div>' +
+        '    <div class="tip-body">{{body}}</div>' +
+        '</li>';
 
 // Create Google Map, after API successfully loaded
 function createMap() {
@@ -66,7 +68,7 @@ function createMap() {
           lat: 47.5,
           lng: 19
         },
-      mapTypeId: 'terrain'
+      mapTypeId: 'roadmap'
     };
   map = new google.maps.Map($('#map')[0], myOptions);
   infoWindow = new google.maps.InfoWindow();
@@ -102,7 +104,7 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
     this.selected = ko.observable(false);
     this.visible = ko.observable(true);
     // the place's marker
-    this.marker;
+    this.marker = null;
     // to store InfoWindow's content
     this.ownInfo = '';
 
@@ -133,7 +135,7 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
                         '{{body}}', tip.text);
                     });
             } else {
-                tipList = 'This place is not rated yet.'
+                tipList = 'This place is not rated yet.';
             }
             tmpl = tmpl.replace('{{tip}}',
                   tipList);
@@ -142,8 +144,8 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
           // if an error is raised, it will inform the user in the InfoWindow
           error: function() {
              tmpl = tmpl.replace('{{tip}}',
-                  'Something went wrong,\
-                   Communication with Foursquare has been failed!');
+                  'Something went wrong,' +
+                  'Communication with Foursquare has been failed!');
              self.ownInfo = tmpl;
           }
         });
@@ -202,7 +204,11 @@ var Place = function(title, location, placeID, venueID, id, placeType) {
 
     // select or not the place
     this.selectPlace = function() {
-        self.selected() ? (self.hideInfoWindow()) : (self.showInfoWindow());
+        if (self.selected()) {
+            self.hideInfoWindow();
+        } else {
+            self.showInfoWindow();
+        }
       }.bind(this);
   };
 
@@ -320,7 +326,7 @@ var neighborhoodPlaces = ko.utils.parseJson(localStorage.getItem(
     'janoss-places'));
 
 // if there is no saved places in localStorage, assign some
-if ((neighborhoodPlaces == undefined) || (neighborhoodPlaces.length < 1)) {
+if ((neighborhoodPlaces === undefined) || (neighborhoodPlaces.length < 1)) {
   var neighborhoodPlaces = [{
       'title': 'Beszálló',
       'location': '47.4975069,19.0508149',
@@ -376,7 +382,7 @@ if ((neighborhoodPlaces == undefined) || (neighborhoodPlaces.length < 1)) {
       'venueID': '4d52c5d39ffc236aafc830a7',
       'placeType': 'sport'
     }];
-};
+}
 
 
 // bind a new instance of our view model to the page
