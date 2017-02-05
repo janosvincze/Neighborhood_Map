@@ -55,7 +55,7 @@ All the necessary files are included in the repository at the [modules](https://
 You can easily download the latest ones from the following sites:
 * [jQuery](http://jquery.com/download/) save as ```YOUR_FOLDER/modules/jquery.mi.js```
 * [Knockout.js](http://knockoutjs.com/downloads/index.html) save as ```YOUR_FOLDER/modules/knockout-latest.js```
-* [Knockout.js mapping plugin](https://github.com/SteveSanderson/knockout.mapping/tree/master/build/output) save as ```knockout.mapping-latest.js```
+* [Knockout.js mapping plugin](https://github.com/SteveSanderson/knockout.mapping/tree/master/build/output) save as ```YOUR_FOLDER/modules/knockout.mapping-latest.js```
 
 ## User's manual
 The site should be intuitive to use. You can select a place by clicking to its marker on the map, or clicking its name on the menu (left side). You can also search between places by name using the input field on the side bar.
