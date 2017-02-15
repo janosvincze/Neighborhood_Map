@@ -1,13 +1,9 @@
 # Neighborhood Map
 ## Contents
-1. [Test site](#test-site)
-2. [Install](#install)
-3. [User's manual](#users-manual)
-4. [Developer's manual](#developers-manual)
-5. [Sources](#sources)
-
-## Test site
- You can try the app at the following link: [Test server](http://ec2-35-162-49-152.us-west-2.compute.amazonaws.com/)
+1. [Install](#install)
+2. [User's manual](#users-manual)
+3. [Developer's manual](#developers-manual)
+4. [Sources](#sources)
 
 ## Install
 ### Run Locally
